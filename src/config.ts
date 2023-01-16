@@ -1,9 +1,10 @@
 export default{
     port:'3000',
+    jwtSecretKey: 'wjy00',
     MySqlConfig:{
-        host     : 'localhost',
+        host     : '127.0.0.1',
         user     : 'root',
-        password : 'wishwkz',
+        password : '123456',
         database : 'User'
     }
 }
