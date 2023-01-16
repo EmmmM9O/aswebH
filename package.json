@@ -9,6 +9,7 @@
     "@types/jsonwebtoken": "^9.0.1",
     "@types/mysql": "^2.15.21",
     "@types/node": "^18.11.18",
+    "@types/nodemailer": "^6.4.7",
     "@types/sqlstring": "^2.3.0",
     "body-parser": "^1.20.1",
     "cors": "^2.8.5",
@@ -16,6 +17,7 @@
     "express-jwt": "^8.3.0",
     "jsonwebtoken": "^9.0.0",
     "mysql": "^2.18.1",
+    "nodemailer": "^6.9.0",
     "sqlstring": "^2.3.3",
     "tsconfig.json": "1.0.11",
     "typescript": "^4.9.4"
