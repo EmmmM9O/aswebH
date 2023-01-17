@@ -36,7 +36,7 @@ router.post('/login',(req,res)=>{
                 res.send('erron MySql '+err);
                 return;
             }
-            let k=eval(result);
+            let k=JSON.parse(JSON.stringify(result))
             if(k.length<=0){
                 res.send({
                     'state':0,
