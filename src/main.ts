@@ -19,6 +19,10 @@ app.all('*',function (_req, res, next) {
 });
 app.use('/api',ApiRouter);
 app.use('/api/user',user);
+app.use(express.static('public'));
+app.get('/',(_req,res)=>{
+    res.sendFile('../public/index.html')
+})
 app.listen(Number(configs.port),()=>{
     console.log("listen ok");
 })

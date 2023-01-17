@@ -7,6 +7,6 @@ export default{
         password : '123456',
         database : 'User'
     },
-    passwordReg :/^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,10}$/,
+    passwordReg :/^[0-9A-Za-z]{4,15}$/,
     mailReg:/^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/
 }
