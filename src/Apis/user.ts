@@ -18,12 +18,18 @@ router.post('/login',(req,res)=>{
         let name=req.body.name;
         let password=req.body.password;
         if(typeof name!=='string'||typeof password!=='string'){
-            res.status(502).send('Erron name or password type');
+            res.send({
+                'state':0,
+                'erron':"出现一个问题:名字或密码的类型不为字符串"
+            });
             console.error(`from${req.query.name} type erron`);
             return;
         }
         if(!passwordReg.test(password)){
-            res.status(500).send('Erron Password is not alow');
+            res.send({
+                'state':0,
+                'erron':'违法的密码'
+            })
             return;
         }
         name=sqlstring.escape(name);
@@ -33,7 +39,12 @@ router.post('/login',(req,res)=>{
         sql.connect();
         sql.query(sqlC,(err,result)=>{
             if(err){
-                res.status(404).send('erron MySql '+err);
+                res.send(
+                    {
+                        'state':0,
+                        'erron':'连接sql出现问题:'+err
+                    }
+                )
                 return;
             }
             let k=JSON.parse(JSON.stringify(result))
@@ -41,7 +52,8 @@ router.post('/login',(req,res)=>{
                 res.send({
                     'state':0,
                     'token':'',
-                    'result':'No Such User'
+                    'result':'No Such User',
+                    'erron':'用户不存在'
                 })
                 return ;
             }
@@ -55,7 +67,10 @@ router.post('/login',(req,res)=>{
             });
         });
     }catch(e){
-        res.send('Erron:'+e)
+        res.send({
+            'state':0,
+            'erron':'主程序出现问题'+e
+        })
     }
 });
 router.post('/signup',(req,res)=>{
@@ -63,15 +78,28 @@ router.post('/signup',(req,res)=>{
     let name=req.body.name;
     let password =req.body.password;
     if(typeof emai!=='string'||typeof name!=='string' || typeof password!=='string'){
-        res.send("erron type");
+        res.send(
+            {
+                'state':0,
+                'erron':'有数据不为字符串!'
+            }
+        );
         return ;
     }
     if(!configs.mailReg.test(emai)){
-        res.send('erron email is not aolw');
+        res.send(
+            {
+                'state':0,
+                'erron':'邮箱不合法'
+            }
+        )
         return ;
     }
     if(!passwordReg.test(password)){
-        res.send('erron password is not alow')
+        res.send({
+            'state':0,
+            'erron':'密码不合法'
+        })
     }
     var sql=connect();
     sql.connect();
@@ -80,13 +108,19 @@ router.post('/signup',(req,res)=>{
     //check email
     sql.query(sqlS,(err,result)=>{
         if(err){
-            res.send('erron sql '+err);
+            res.send({
+                'state':0,
+                'erron':'连接sql出现问题'+err
+            })
             return ;
         }
         try{
             let o=eval(result);
             if(typeof o!==typeof []){
-                res.send('erron result type');
+                res.send({
+                    'state':0,
+                    'erron':'sql查询出未知类型'
+                })
                 return ;
             }
             if(o.length<=0){
@@ -100,7 +134,10 @@ router.post('/signup',(req,res)=>{
                     text:'你的验证码是'+vccde+'若非本人操作 请忽略 有效期5分钟'
                 },(err,_info)=>{
                     if(err){
-                        res.status(402).send(err);
+                        res.send({
+                            'state':0,
+                            'erron':'类型转换出现问题'
+                        })
                         return ;
                     }
                 });
@@ -121,10 +158,16 @@ router.post('/signup',(req,res)=>{
                 )
                 return;
             }else{
-                res.send('has an email');
+                res.send({
+                    'state':0,
+                    'erron':'邮箱已存在'
+                })
             }
         }catch(e){
-            res.send('erron on:'+e);
+            res.send({
+                'state':0,
+                'erron':'主程序运行出错'+e
+            });
             return ;
         }
     });
@@ -133,29 +176,41 @@ router.post('/signup',(req,res)=>{
 router.post('/vccode',(req,res)=>{
     let token=req.body.token;
     if(typeof token!=='string'){
-        res.status(401).send('erron type on '+typeof token);
+        res.send(
+            {
+                'state':0,
+                'erron':'token类型错误'
+            }
+        )
     }
     try{
         let k=jwt.verify(token,configs.jwtSecretKey);
         if(!k){
-            res.status(401).send('过期');
+            res.send({
+                'state':0,
+                'erron':'已过期'
+            });
         }
         if(typeof k==='string'){
-            res.status(402).send('jwt异常');
+            res.send({
+                'state':0,
+                'erron':'token异常'
+            })
             return;
         }
         if(!k.vccode|| typeof k.vccode !='string'){
-            res.send('err vccode type');
+            res.send({'state':0,'erron':'错误验证码类型'});
             return;
         }
         if(k.vccode!=vccodes[token]){
-            res.send('erron vccode is not same');
+            res.send({'state':0,'erron':'错误验证码'});
+            return ;
         }
         let emai=k.mail;
         let name=k.name
         let password=k.password;
         if(typeof emai!=='string'||typeof name!=='string'||typeof password!=='string'){
-            res.send('err type'+typeof emai+'/'+typeof name+'/'+typeof password);
+            res.send({'state':0,'erron':'错误数据类型'});
             return;
         }
         emai=sqlstring.escape(emai);
@@ -166,13 +221,13 @@ router.post('/vccode',(req,res)=>{
         sql.connect();
         sql.query(sqlS,(err,_result)=>{
             if(err){
-                res.send('erron sql:'+err);
+                res.send({'state':0,'erron':'sql错误:'+err});
                 return;
             }
             res.send('ok');
         });
     }catch(e){
-        res.status(401).send('过期:'+e)
+        res.send({'state':0,'erron':'主程序错误'+e});
         return ;
     }
 })
