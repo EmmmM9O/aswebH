@@ -28,3 +28,7 @@ coverage
 *.sw?
 
 src/QQEmail.ts
+public
+public/assets/index-7b3ca4cc.css
+public/assets/index-8e7cdcb6.js
+public/index.html

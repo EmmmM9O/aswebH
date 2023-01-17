@@ -18,12 +18,12 @@ router.post('/login',(req,res)=>{
         let name=req.body.name;
         let password=req.body.password;
         if(typeof name!=='string'||typeof password!=='string'){
-            res.send('Erron name or password type');
+            res.status(502).send('Erron name or password type');
             console.error(`from${req.query.name} type erron`);
             return;
         }
         if(!passwordReg.test(password)){
-            res.send('Erron Password is not alow');
+            res.status(500).send('Erron Password is not alow');
             return;
         }
         name=sqlstring.escape(name);
@@ -33,7 +33,7 @@ router.post('/login',(req,res)=>{
         sql.connect();
         sql.query(sqlC,(err,result)=>{
             if(err){
-                res.send('erron MySql '+err);
+                res.status(404).send('erron MySql '+err);
                 return;
             }
             let k=JSON.parse(JSON.stringify(result))
@@ -51,7 +51,7 @@ router.post('/login',(req,res)=>{
             res.send({
                 'state':1,
                 'token':tokenStr,
-                'result':result
+                'result':JSON.stringify(k[0])
             });
         });
     }catch(e){
@@ -133,7 +133,7 @@ router.post('/signup',(req,res)=>{
 router.post('/vccode',(req,res)=>{
     let token=req.body.token;
     if(typeof token!=='string'){
-        res.status(101).send('erron type on '+typeof token);
+        res.status(401).send('erron type on '+typeof token);
     }
     try{
         let k=jwt.verify(token,configs.jwtSecretKey);
