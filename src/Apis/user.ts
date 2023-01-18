@@ -201,11 +201,11 @@ router.post('/vccode',(req,res)=>{
             })
             return;
         }
-        if(!k.vccode|| typeof k.vccode !='string'){
+        if(!req.body.vccode|| typeof req.body.vccode !='string'){
             res.send({'state':0,'erron':'错误验证码类型'});
             return;
         }
-        if(k.vccode!=vccodes[token]){
+        if(req.body.vccode!=vccodes[token]){
             res.send({'state':0,'erron':'错误验证码'});
             return ;
         }

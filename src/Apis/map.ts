@@ -21,6 +21,7 @@ import MapIO from '../IO/mapIO';
 import compressing from 'compressing';
 import path from 'path';
 import jwt from 'jsonwebtoken';
+import file from '../IO/file';
 var objMulter=multer({dest: configs.path+'/maps'});
 function connect(){
     return mysql.createConnection(configs.MySqlConfig);
@@ -39,16 +40,20 @@ router.post('/upload',(req,res)=>{
     let mapAnother=req.body.another;
     let mapDecs=req.body.decs;
     let token=req.body.token;
+    console.log(req.body);
     if(typeof mapName!=='string'||typeof mapAnother!=='string'||typeof mapDecs!=='string'){
         res.send({'state':0,'erron':'错误的类型'});
+        console.log('类型错误');
         return ;
     }
     if(req.files==null||req.files.length<=0){
         res.send({'state':0,'erron':'错误的文件'});
+        console.log('文件错误');
         return ;
     }
     if(typeof token!=='string'){
         res.send({'state':0,'erron':'错误的token'});
+        console.log('token错误');
         return ;
     }
     if(req.files instanceof Array<File>){
@@ -56,14 +61,17 @@ router.post('/upload',(req,res)=>{
             let k=jwt.verify(token,configs.jwtSecretKey);
             if(!k){
                 res.send({'state':-1,'erron':'已过期'});
+                console.log('过期');
                 return ;
             }
             if(typeof k!='object'){
                 res.send({'state':0,'erron':'错误的token类型'});
+                console.log('token错误');
                 return ;
             }
             if(k.state!=1){
                 res.send({'state':0,'erron':'错误的状态'});
+                console.log('状态错误');
                 return;
             }
             let w=k;
@@ -73,29 +81,35 @@ router.post('/upload',(req,res)=>{
                 if(err){
                     console.error(err);
                     res.send({'state':0,'erron':'文件重命名错误'});
+                    console.log('重命名错误');
                     fs.unlink(d,err=>{if(err) console.error(err)});
                     return ;
                 }
                 MapIO.load();let id=MapIO.datas.IdNow+1;
-                let path=configs.path+'/map/'+String(id);
+                let path=configs.path+'/maps/'+String(id);
                 compressing.zip.uncompress(newname,path).catch(err=>{
                     console.error(err);
                     res.send({'state':0,'erron':'错解压出错'});
+                    console.log('解压错误');
                     fs.unlink(newname,err=>{if(err) console.error(err);});
                 }).then(_=>{
+                    fs.unlink(newname,err=>{if(err) console.error(err);});
                     let sql=connect();
                     sql.connect();
-                    let sqlS:string='insert into user (id,name,upload,another,MapPath,decs) values ('
-                    +sqlstring.escape(id)+','+sqlstring.escape(mapName)+','+sqlstring.escape(w.name)+','+sqlstring.escape(mapAnother)
-                    +','+path+','+sqlstring.escape(mapDecs)+')';
+                    let sqlS:string='insert into maps (id,name,upload,another,MapPath,decs) values ("'
+                    +id+'",'+sqlstring.escape(mapName)+','+sqlstring.escape(w.name)+','+sqlstring.escape(mapAnother)
+                    +',"'+path+'",'+sqlstring.escape(mapDecs)+')';
                     sql.query(sqlS,(err,_result)=>{
                         if(err){
                             console.error(err);
                             res.send({'state':0,'erron':'错误的sql:'+err});
-                            fs.unlink(path,(err)=>{if(err) console.error(err);});
+                            console.log('错误sql'+err);
+                            file.rmDir(path);
                             return ;
                         }
                         res.send({'state':0,'result':_result});
+                        MapIO.datas.IdNow++;
+                        MapIO.save();
                     });
 
                 })
@@ -106,6 +120,7 @@ router.post('/upload',(req,res)=>{
             return ;
         }
     }else{
+        console.log('错误的类型主');
         res.send({'state':0,'erron':'错误的类型'})    
     }
 })
