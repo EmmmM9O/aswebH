@@ -47,7 +47,7 @@ router.post('/login',(req,res)=>{
                 )
                 return;
             }
-            let k=JSON.parse(JSON.stringify(result))
+            let k=JSON.parse(JSON.stringify(result));
             if(k.length<=0){
                 res.send({
                     'state':0,
@@ -57,7 +57,9 @@ router.post('/login',(req,res)=>{
                 })
                 return ;
             }
-            var tokenStr = jwt.sign(k[0], configs.jwtSecretKey, {
+            let su=k[0];
+            su.state=1;
+            var tokenStr = jwt.sign(su, configs.jwtSecretKey, {
                 expiresIn: '10h',
             })
             res.send({
@@ -142,6 +144,7 @@ router.post('/signup',(req,res)=>{
                     }
                 });
                 let resu={
+                    state:0,
                     name:name,
                     password:password,
                     mail:emai,
@@ -224,7 +227,7 @@ router.post('/vccode',(req,res)=>{
                 res.send({'state':0,'erron':'sql错误:'+err});
                 return;
             }
-            res.send('ok');
+            res.send({'state':0,'erron':'错误的文件'});
         });
     }catch(e){
         res.send({'state':0,'erron':'主程序错误'+e});

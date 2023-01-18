@@ -8,5 +8,6 @@ export default{
         database : 'User'
     },
     passwordReg :/^[0-9A-Za-z]{4,15}$/,
-    mailReg:/^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/
+    mailReg:/^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/,
+    path:'/home/emmmPad/aswebH'
 }
