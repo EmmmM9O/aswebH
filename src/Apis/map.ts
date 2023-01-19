@@ -124,40 +124,55 @@ router.post('/upload',(req,res)=>{
         res.send({'state':0,'erron':'错误的类型'})    
     }
 })
+/*
+select * from table limit (start-1)*pageSize,pageSize
+*/
+router.post('/getMap/PageAll',(req,res):any=>{
+    let page=Number(req.body.page);
+    let pageSize=Number(req.body.pageSize);
+    if(isNaN(page)||page==null||page<=0||pageSize==null||isNaN(pageSize)||pageSize<=0){
+        return res.send({'state':0,'erron':'错误的页码'});
+    }
+    let sqlS='select * from table limit "'+(page-1)*pageSize+'","'+pageSize+'"';
+    let sql=connect();
+    sql.connect();
+    sql.query(sqlS,(err,result):any=>{
+        if(err){
+            return res.send({'state':0,'erron':'sql错误!:'+err});
+        }
+        return res.send({'state':1,'result':result});
+    })
+});
 
 router.get('/getMap/ById/:id',(req,res)=>{
     let id=Number(req.params.id);
-    if(isNaN(id)||id==null||id<=0){
+    if(isNaN(id)||id==null||id<0){
         res.send({
             'state':0,
             'erron':'错误id'
         });
         return;
     }
-    let sqlC='select * from maps where id like '+sqlstring.escape(id);
-    let sql=connect();
-    sql.connect();
-    sql.query(sqlC,(err,result)=>{
-        if(err){
-            res.send({'state':0,'erron':'sqlerr:'+err});
-            return;
-        }
-        let k=JSON.parse(JSON.stringify(result));
-        if(k.length<=0){
-            res.send({'state':0,'erron':'没有地图'+String(id)});
-            return ;
-        }
+    let temp=configs.path+'/maps/'+id;
+    let Tpath='/tmp/asweb/'+id;
+    if(!fs.existsSync(temp)){
+        res.send({'state':0,'erron':'不存在的地图'});  
+        return ;
+    }
+    if(!fs.statSync(temp).isDirectory()){
+        res.send({'state':0,'erron':'错误的地图'});  
+        return ;
+    }
         try{
-            let path='/tmp/asweb/'+k.name;
-            compressing.zip.compressDir(k.MapPath,path).then(()=>{
-                res.download(path);
+            compressing.zip.compressDir(temp,Tpath).then(()=>{
+                res.download(temp);
             }).catch(err=>{
                 res.send({'state':0,'erron':'压缩出错'+err});  
+                fs.unlinkSync(Tpath);
             });
         }catch(e){
             res.send({'state':0,'erron':'下载出错'+String(id)});  
         }
-    })
 
 });
 export default router;

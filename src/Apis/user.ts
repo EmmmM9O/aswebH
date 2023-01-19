@@ -65,7 +65,7 @@ router.post('/login',(req,res)=>{
             res.send({
                 'state':1,
                 'token':tokenStr,
-                'result':JSON.stringify(k[0])
+                'result':k[0]
             });
         });
     }catch(e){
