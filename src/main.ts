@@ -12,8 +12,8 @@ app.use(cors({
     origin:['http://localhost:'+configs.port],
     methods:['GET','POST'],
 }));
-app.use('/api/user',bodyParser.json());// 添加json解析
-app.use('/api/user',bodyParser.urlencoded({extended: false}));
+app.use('/api',bodyParser.json());// 添加json解析
+app.use('/api',bodyParser.urlencoded({extended: false}));
 app.all('*',function (_req, res, next) {
     res.header('Access-Control-Allow-Origin', 'http://localhost:'+configs.port);
     res.header('Access-Control-Allow-Headers', 'Content-Type');

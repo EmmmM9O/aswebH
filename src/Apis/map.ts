@@ -128,12 +128,13 @@ router.post('/upload',(req,res)=>{
 select * from table limit (start-1)*pageSize,pageSize
 */
 router.post('/getMap/PageAll',(req,res):any=>{
+    console.log(req.body);
     let page=Number(req.body.page);
     let pageSize=Number(req.body.pageSize);
     if(isNaN(page)||page==null||page<=0||pageSize==null||isNaN(pageSize)||pageSize<=0){
         return res.send({'state':0,'erron':'错误的页码'});
     }
-    let sqlS='select * from table limit "'+(page-1)*pageSize+'","'+pageSize+'"';
+    let sqlS='select * from maps limit '+(page-1)*pageSize+','+pageSize+'';
     let sql=connect();
     sql.connect();
     sql.query(sqlS,(err,result):any=>{
@@ -143,7 +144,27 @@ router.post('/getMap/PageAll',(req,res):any=>{
         return res.send({'state':1,'result':result});
     })
 });
-
+router.get('/getPng/:id',(req,res)=>{
+    let id=Number(req.params.id);
+    if(isNaN(id)||id==null||id<0){
+        res.send({'state':0,'erron':'错误id'});
+        return ;
+    }
+    let temp=configs.path+'/maps/'+id;
+    if(!fs.existsSync(temp)){
+        res.send({'state':0,'erron':'不存在的地图'});  
+        return ;
+    }
+    if(!fs.statSync(temp).isDirectory()){
+        res.send({'state':0,'erron':'错误的地图'});  
+        return ;
+    }
+    if(!fs.existsSync(temp+'/icon.png')){
+        res.send({'state':0,'erron':'没有图标'});  
+        return ;
+    }
+    res.sendFile(temp+'/icon.png')
+})
 router.get('/getMap/ById/:id',(req,res)=>{
     let id=Number(req.params.id);
     if(isNaN(id)||id==null||id<0){

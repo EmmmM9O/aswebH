@@ -227,7 +227,8 @@ router.post('/vccode',(req,res)=>{
                 res.send({'state':0,'erron':'sql错误:'+err});
                 return;
             }
-            res.send({'state':0,'erron':'错误的文件'});
+            res.send({'state':0,'erron':'注册成功'});
+            vccodes[token]='Nowiwdiskeuwkdiw';
         });
     }catch(e){
         res.send({'state':0,'erron':'主程序错误'+e});
