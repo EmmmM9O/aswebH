@@ -74,6 +74,10 @@ router.post('/upload',(req,res)=>{
                 console.log('状态错误');
                 return;
             }
+            if(path.parse(req.files[0].originalname).ext!='.zip'){
+                res.send({'state':0,'erron':'请上传一个ZIP文件'});
+                return ;
+            }
             let w=k;
             const newname=req.files[0].path+path.parse(req.files[0].originalname).ext;
             let d=req.files[0].path;
@@ -144,6 +148,24 @@ router.post('/getMap/PageAll',(req,res):any=>{
         return res.send({'state':1,'result':result});
     })
 });
+router.post('/getMap/PageName',(req,res):any=>{
+    console.log(req.body);
+    let page=Number(req.body.page);
+    let pageSize=Number(req.body.pageSize);
+    let sea=req.body.sea;
+    if(isNaN(page)||page==null||page<=0||pageSize==null||isNaN(pageSize)||pageSize<=0||typeof sea!='string'){
+        return res.send({'state':0,'erron':'错误的页码'});
+    }
+    let sqlS='select * from maps WHERE name REGEXP '+sqlstring.escape(sea)+' limit '+(page-1)*pageSize+','+pageSize+'';
+    let sql=connect();
+    sql.connect();
+    sql.query(sqlS,(err,result):any=>{
+        if(err){
+            return res.send({'state':0,'erron':'sql错误!:'+err});
+        }
+        return res.send({'state':1,'result':result});
+    })
+});
 router.get('/getPng/:id',(req,res)=>{
     let id=Number(req.params.id);
     if(isNaN(id)||id==null||id<0){
@@ -175,7 +197,7 @@ router.get('/getMap/ById/:id',(req,res)=>{
         return;
     }
     let temp=configs.path+'/maps/'+id;
-    let Tpath='/tmp/asweb/'+id;
+    let Tpath='/tmp/asweb/'+id+'.zip';
     if(!fs.existsSync(temp)){
         res.send({'state':0,'erron':'不存在的地图'});  
         return ;
@@ -186,13 +208,18 @@ router.get('/getMap/ById/:id',(req,res)=>{
     }
         try{
             compressing.zip.compressDir(temp,Tpath).then(()=>{
-                res.download(temp);
+                res.download(Tpath,String(id)+'.zip',function (err) {
+                    if (err) res.send({'state':0,'erron':'出现问题'})
+                  });
+                fs.unlinkSync(Tpath);
             }).catch(err=>{
                 res.send({'state':0,'erron':'压缩出错'+err});  
+                console.error(err);
                 fs.unlinkSync(Tpath);
             });
         }catch(e){
             res.send({'state':0,'erron':'下载出错'+String(id)});  
+            console.error(e);
         }
 
 });
