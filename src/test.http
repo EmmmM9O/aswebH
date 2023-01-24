@@ -1,4 +1,8 @@
-POST http://localhost:3000/api/map/upload HTTP/1.1
-Content-Type: multipart/form-data
+POST http://localhost:3000/api/robot/checkVccode
+content-type: application/json
+//这里必须有一空行
 
-< /root/sd/test.txt
+{
+    "token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0aW1lIjoxNjc0NTQ3NzE1NjQxLCJsb2NrIjoidGVzdCIsInN0YXRlIjoi6aqM6K-B5LitIiwiaWF0IjoxNjc0NTQ3NzE1LCJleHAiOjE2NzQ1NDgwMTV9.PlDsC0aM6LHfaly9LBzT6Qv612lQoUtw4jIXEU4ieME",
+    "vccode":"5Kfx"
+}

@@ -1,8 +1,9 @@
 import express from 'express';
 import ApiRouter from './apis';
 import configs from './config';
-import user from './Apis/user'
-import map from './Apis/map'
+import user from './Apis/user';
+import map from './Apis/map';
+import robot from './Apis/robot'
 import bodyParser from 'body-parser';
 import file from './IO/file';
 file.mkdirI('maps');
@@ -23,6 +24,7 @@ app.all('*',function (_req, res, next) {
 app.use('/api',ApiRouter);
 app.use('/api/user',user);
 app.use('/api/map',map);
+app.use('/api/robot',robot);
 app.use(express.static('public'));
 app.get('/',(_req,res)=>{
     res.sendFile('../public/index.html')
@@ -30,3 +32,5 @@ app.get('/',(_req,res)=>{
 app.listen(Number(configs.port),()=>{
     console.log("listen ok");
 })
+
+

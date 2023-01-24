@@ -15,14 +15,14 @@ function connect(){
 }
 router.post('/login',(req,res)=>{
     try{
+        let token=req.body.token;
         let name=req.body.name;
         let password=req.body.password;
-        if(typeof name!=='string'||typeof password!=='string'){
+        if(typeof name!=='string'||typeof password!=='string'||typeof token!='string'){
             res.send({
                 'state':0,
                 'erron':"出现一个问题:名字或密码的类型不为字符串"
             });
-            console.error(`from${req.query.name} type erron`);
             return;
         }
         if(!passwordReg.test(password)){
@@ -31,6 +31,16 @@ router.post('/login',(req,res)=>{
                 'erron':'违法的密码'
             })
             return;
+        }
+        let k=jwt.verify(token,configs.jwtSecretKey);
+        if(!k) {
+            res.send({'state':0,'erron':'过期'});return ;
+        }
+        if(typeof k=='string'){
+            res.send({'state':0,'erron':'你妈token这样'});return ;
+        }
+        if(k.state!='验证通过'){
+            res.send({'state':0,'erron':'少拿其他token糊弄我'});return;
         }
         name=sqlstring.escape(name);
         password=sqlstring.escape(password);
@@ -79,6 +89,7 @@ router.post('/signup',(req,res)=>{
     let emai=req.body.mail;
     let name=req.body.name;
     let password =req.body.password;
+    let token=req.body.token;
     if(typeof emai!=='string'||typeof name!=='string' || typeof password!=='string'){
         res.send(
             {
@@ -103,6 +114,8 @@ router.post('/signup',(req,res)=>{
             'erron':'密码不合法'
         })
     }
+    let k=jwt.verify(token,configs.jwtSecretKey);
+    if(!k){res.send({'state':0,'erron':'验证码过期'});return ;}if(typeof k=='string'){res.send({'state':0,'erron':'你妈想改token是吧'});return ;}if(k.state!='验证通过'){res.send({'state':0,'erron':'你妈想炒饭是吧'});return ;}
     var sql=connect();
     sql.connect();
     let semai=sqlstring.escape(emai);
@@ -177,6 +190,7 @@ router.post('/signup',(req,res)=>{
 
 });
 router.post('/vccode',(req,res)=>{
+    let bToken=req.body.bToken;
     let token=req.body.token;
     if(typeof token!=='string'){
         res.send(
@@ -186,6 +200,8 @@ router.post('/vccode',(req,res)=>{
             }
         )
     }
+    let k=jwt.verify(bToken,configs.jwtSecretKey);
+    if(!k){res.send({'state':0,'erron':'验证码过期'});return ;}if(typeof k=='string'){res.send({'state':0,'erron':'你妈想改token是吧'});return ;}if(k.state!='验证通过'){res.send({'state':0,'erron':'你妈想炒饭是吧'});return ;}
     try{
         let k=jwt.verify(token,configs.jwtSecretKey);
         if(!k){
