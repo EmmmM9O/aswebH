@@ -3,7 +3,7 @@ import random
 import os
 def generate_random_str(randomlength=4):
     random_str =''
-    base_str ='ABCDEFGHIGKLMNOPQRSTUVWXYZabcdefghigklmnopqrstuvwxyz0123456789'
+    base_str ='abcdefghigklmnopqrstuvwxyz0123456789'
     length =len(base_str) -1
     for i in range(randomlength):
         random_str +=base_str[random.randint(0, length)]
@@ -25,7 +25,7 @@ for l in s:
     img.paste(newI, (v, 0))
     v+=120+random.randint(-40,40)
 draw = ImageDraw.Draw(img)
-for i in range(random.randint(20,30)):
+for i in range(random.randint(5,10)):
     draw.line((random.randint(0,512),random.randint(0,128),random.randint(0,512),random.randint(0,128)),fill=(random.randint(0,255),random.randint(0,255),random.randint(0,255)),width=random.randint(1,10))
 img.save("/tmp/asweb/vccode-"+s+".png")
 print(s)
