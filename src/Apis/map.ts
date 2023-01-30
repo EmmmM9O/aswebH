@@ -40,6 +40,7 @@ router.post('/upload',(req,res)=>{
     let mapAnother=req.body.another;
     let mapDecs=req.body.decs;
     let token=req.body.token;
+    console.log(req.files);
     console.log(req.body);
     if(typeof mapName!=='string'||typeof mapAnother!=='string'||typeof mapDecs!=='string'){
         res.send({'state':0,'erron':'错误的类型'});
@@ -74,30 +75,23 @@ router.post('/upload',(req,res)=>{
                 console.log('状态错误');
                 return;
             }
-            if(path.parse(req.files[0].originalname).ext!='.zip'){
-                res.send({'state':0,'erron':'请上传一个ZIP文件'});
-                return ;
+            let icon,msav;
+            for(let i of req.files){
+                if(path.parse(i.originalname).ext=='.msav') msav=i;
+                if(path.parse(i.originalname).ext=='.png') icon=i;
+                
+            }
+            if(icon==null||msav==null){
+                res.send({'state':0,'erron':'请确保1个msav一个png'});
+                return;
             }
             let w=k;
-            const newname=req.files[0].path+path.parse(req.files[0].originalname).ext;
-            let d=req.files[0].path;
-            fs.rename(req.files[0].path,newname,function(err){
-                if(err){
-                    console.error(err);
-                    res.send({'state':0,'erron':'文件重命名错误'});
-                    console.log('重命名错误');
-                    fs.unlink(d,err=>{if(err) console.error(err)});
-                    return ;
-                }
+            //const newname=icon.path+path.parse(icon.originalname).ext;
                 MapIO.load();let id=MapIO.datas.IdNow+1;
-                let path=configs.path+'/maps/'+String(id);
-                compressing.zip.uncompress(newname,path).catch(err=>{
-                    console.error(err);
-                    res.send({'state':0,'erron':'错解压出错'});
-                    console.log('解压错误');
-                    fs.unlink(newname,err=>{if(err) console.error(err);});
-                }).then(_=>{
-                    fs.unlink(newname,err=>{if(err) console.error(err);});
+                let pathw=configs.path+'/maps/'+String(id);
+                fs.mkdirSync(pathw)
+                fs.renameSync(icon.path,pathw+'/icon.png');
+                fs.renameSync(msav.path,pathw+'/map.msav')
                     let sql=connect();
                     sql.connect();
                     let sqlS:string='insert into maps (id,name,upload,another,MapPath,decs) values ("'
@@ -108,16 +102,13 @@ router.post('/upload',(req,res)=>{
                             console.error(err);
                             res.send({'state':0,'erron':'错误的sql:'+err});
                             console.log('错误sql'+err);
-                            file.rmDir(path);
+                            file.rmDir(pathw);
                             return ;
                         }
-                        res.send({'state':0,'result':_result});
+                        res.send({'state':1,'result':_result});
                         MapIO.datas.IdNow++;
                         MapIO.save();
                     });
-
-                })
-            });
         }catch(e){
             console.log(e);
             res.send({'state':0,'erron':'主程序出错'+e});
@@ -135,32 +126,35 @@ router.post('/getMap/PageAll',(req,res):any=>{
     console.log(req.body);
     let page=Number(req.body.page);
     let pageSize=Number(req.body.pageSize);
+    let sea=req.body.sea;
+    let seaN=req.body.seaN;
     if(isNaN(page)||page==null||page<=0||pageSize==null||isNaN(pageSize)||pageSize<=0){
         return res.send({'state':0,'erron':'错误的页码'});
     }
-    let sqlS='select * from maps limit '+(page-1)*pageSize+','+pageSize+'';
-    let sql=connect();
-    sql.connect();
-    sql.query(sqlS,(err,result):any=>{
-        if(err){
-            return res.send({'state':0,'erron':'sql错误!:'+err});
-        }
-        return res.send({'state':1,'result':result});
-    })
-});
-router.post('/getMap/PageName',(req,res):any=>{
-    console.log(req.body);
-    let page=Number(req.body.page);
-    let pageSize=Number(req.body.pageSize);
-    let sea=req.body.sea;
-    if(isNaN(page)||page==null||page<=0||pageSize==null||isNaN(pageSize)||pageSize<=0||typeof sea!='string'){
-        return res.send({'state':0,'erron':'错误的页码'});
+    if(typeof sea!=`string`||!(seaN instanceof Array<string>)){
+        return res.send({'state':0,'erron':'错误的类型'});
     }
-    let sqlS='select * from maps WHERE name REGEXP '+sqlstring.escape(sea)+' limit '+(page-1)*pageSize+','+pageSize+'';
+    if(seaN.length<=0) {
+	    return res.send({'state':0,'erron':'没有选项'});
+    }
+    if(sea.length<=0) sea='.';
+    interface e{
+        [inde:string]:string
+    }
+    let r={"名字":"name","作者":"another","简介":"decs"} as e,s='';
+    for(let i=0;i<seaN.length;i++){
+        if(typeof seaN[i]!=='string')break;
+        s+=r[seaN[i]]+' REGEXP '+sqlstring.escape(sea)+' ';
+        if(i!=seaN.length-1){
+            s+='or ';
+        }
+    }
+    let sqlS='select * from maps where '+s+' limit '+(page-1)*pageSize+','+pageSize+'';
     let sql=connect();
     sql.connect();
     sql.query(sqlS,(err,result):any=>{
         if(err){
+		console.error(err)
             return res.send({'state':0,'erron':'sql错误!:'+err});
         }
         return res.send({'state':1,'result':result});
